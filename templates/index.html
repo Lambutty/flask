@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+         body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display:grid;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            justify-content: center;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .title {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .recordButton {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .recordButton:hover {
+            background-color: #0056b3;
+        }
+
+        .outputText {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 100px;
+            font-size: 18px;
+        }
+
+        .stopButton {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .stopButton:hover {
+            background-color: #c82333;
+        }
+
+        .searchInput {
+            margin-top:10px;
+            width: calc(100% - 80px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .searchButton {
+            margin-top:10px;
+            width: 80px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            margin-bottom: 10px;
+            margin-left:5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .searchButton:hover {
+            background-color: #0056b3;
+        }
+
+        #results {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        #results li {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        #results li:hover {
+            background-color: #f9f9f9;
+        }
+    </style>
+    <title>Maxi</title>
+</head>
+<body>
+        <div class="container">
+            <h1 class="title">Maxi</h1>
+            <button id="startButton" class="recordButton">Start Recording</button>
+            <button id="stopButton" class="stopButton" style="display: none;">Ask Me</button>
+            <div id="output" class="outputText"></div>
+        
+        <div style="display: flex;">
+            <input type="text" id="searchInput" class="searchInput" placeholder="Search by name">
+            <button onclick="search()" class="searchButton">Search</button>
+        </div>
+        <table id="results">
+
+            <thead>
+                <th>NAME</th>
+                <th>GANG</th>
+            </thead>
+            <tbody>
+                {% for item in data %}
+                <tr>
+                    <td>
+                        {{ item.Artikelname }}
+                    </td>
+                    <td>
+                        {{ item.Gang }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <!-- <ul id="results">
+            {% for item in data %}
+                <li>{{ item.Artikelname }} | GANG: {{ item.Gang }}</li>
+            {% endfor %}
+        </ul> -->
+    </div>
+
+    <script>
+        function search() {
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput.value.toLowerCase();
+            const items = document.querySelectorAll('#results tr');
+
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const outputDiv = document.getElementById('output');
+        const recognition = new webkitSpeechRecognition() || new SpeechRecognition();
+        let result = null
+        let isRecording = false;
+        
+        recognition.interimResults = true;
+        recognition.continuous = true;
+        recognition.lang = 'de-DE';
+        
+        recognition.onresult = event => {
+            if(isRecording){
+                result = event.results[event.results.length - 1][0].transcript;
+                outputDiv.textContent = result;
+            }
+        };
+
+        // recognition.onend = () => {
+        //     startButton.disabled = false;
+        //     startButton.textContent = 'Start Recording';
+        //     stopButton.style.display = 'none';
+        // };
+
+        recognition.onerror = event => {
+            console.error('Speech recognition error:', event.error);
+        };
+
+        recognition.onnomatch = () => {
+            console.log('No speech was recognized.');
+        };
+
+        startButton.addEventListener('click', () => {
+            isRecording = true;
+            recognition.results = null
+            startButton.disabled = true;
+            startButton.textContent = 'Recording...';
+            stopButton.style.display = 'inline-block';
+        });
+    
+        stopButton.addEventListener('click', () => {
+            stopRequest(result)
+            isRecording = false;
+            startButton.disabled = false;
+            startButton.textContent = 'Start Recording';
+            stopButton.style.display = 'none';
+        });
+
+        recognition.start()
+    
+        async function stopRequest(result) {
+            const method = 'POST'; // Change the method to POST
+            try {
+                const response = await fetch("/stop-listening", {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ result: result }) // Include the result in the request body
+                });
+
+                const data = await response.json();
+                const utterThis = new SpeechSynthesisUtterance(data['text']);
+                speechSynthesis.speak(utterThis);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    </script>
+
+    </body>
+</body>
+</html>

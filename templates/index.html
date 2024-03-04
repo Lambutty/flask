@@ -178,7 +178,13 @@
         const startButton = document.getElementById('startButton');
         const stopButton = document.getElementById('stopButton');
         const outputDiv = document.getElementById('output');
-        const recognition = new webkitSpeechRecognition() || new SpeechRecognition();
+		window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+		const recognition = new window.SpeechRecognition();
+		x_mobileFlg = window.navigator.userAgentData.mobile
+		recognition.continous = true
+		if (x_mobileFlg) {
+			recognition.continuous = false;
+		}
         let result = null
         let isRecording = false;
         
@@ -216,7 +222,7 @@
         });
     
         stopButton.addEventListener('click', () => {
-            stopRequest(result)
+          
             isRecording = false;
             startButton.disabled = false;
             startButton.textContent = 'Start Recording';
@@ -225,25 +231,7 @@
 
         recognition.start()
     
-        async function stopRequest(result) {
-            const method = 'POST'; // Change the method to POST
-            try {
-                const response = await fetch("/stop-listening", {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({ result: result }) // Include the result in the request body
-                });
-
-                const data = await response.json();
-                const utterThis = new SpeechSynthesisUtterance(data['text']);
-                speechSynthesis.speak(utterThis);
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
+ 
     </script>
 
     </body>

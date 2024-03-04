@@ -21,15 +21,15 @@ app.config['SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
 CORS(app)
 
 
-chroma_client = chromadb.HttpClient(
-                        host=os.environ.get('CHROMA_URL'), 
-                        port=8000,
-                        settings=Settings(
-                        chroma_client_auth_provider="chromadb.auth.token.TokenAuthClientProvider",
-                        chroma_client_auth_credentials=AUTH
-                            )
-                        )
-collection = chroma_client.get_collection('artikel')
+# chroma_client = chromadb.HttpClient(
+#                         host=os.environ.get('CHROMA_URL'), 
+#                         port=8000,
+#                         settings=Settings(
+#                         chroma_client_auth_provider="chromadb.auth.token.TokenAuthClientProvider",
+#                         chroma_client_auth_credentials=AUTH
+#                             )
+#                         )
+# collection = chroma_client.get_collection('artikel')
 
 
 class Server:
@@ -127,16 +127,16 @@ def read_csv(filename):
 def stop_listening():
     data = request.json
     spoken = data.get('result')
-    if not spoken:
-        return jsonify({'text': 'Habe leider nichts verstanden'})
-    results = collection.query(
-                            query_texts=[spoken],
-                            n_results=1,
-                            #where={"metadata_field": "document1"}, # optional filter
-                            #where_document={"$contains": "nuts"} # optional filter
-                        )
+    # if not spoken:
+    return jsonify({'text': 'Habe leider nichts verstanden'})
+    # results = collection.query(
+    #                         query_texts=[spoken],
+    #                         n_results=1,
+    #                         #where={"metadata_field": "document1"}, # optional filter
+    #                         #where_document={"$contains": "nuts"} # optional filter
+    #                     )
     # Process the result as needed
-    return jsonify({'text': f"Sollten in {Spots.GANG.value} " + str(results['metadatas'][0][0][Spots.GANG.value]) + f"sein"})
+    # return jsonify({'text': f"Sollten in {Spots.GANG.value} " + str(results['metadatas'][0][0][Spots.GANG.value]) + f"sein"})
 
 
 # if __name__ == '__main__':
